@@ -274,6 +274,12 @@ function SignIn() {
   );
 }
 
+if (typeof setBoot === 'function') setBoot('inline script running');
+if (!window.supabase) { showFatal && showFatal('Supabase CDN failed to load (window.supabase is undefined)'); throw new Error('Supabase CDN failed to load'); }
+if (!window.React) { showFatal && showFatal('React CDN failed to load'); throw new Error('React CDN failed to load'); }
+if (!window.ReactDOM) { showFatal && showFatal('ReactDOM CDN failed to load'); throw new Error('ReactDOM CDN failed to load'); }
+if (typeof setBoot === 'function') setBoot('mounting React');
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+if (typeof setBoot === 'function') setBoot('React mounted, calling initAuth');
 window.ZH.db.initAuth();

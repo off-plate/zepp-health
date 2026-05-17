@@ -142,8 +142,15 @@
 </head>
 <body>
   <div id="root">
-    <div style="display:grid;place-items:center;min-height:100vh;color:var(--muted)">Loading…</div>
+    <div style="display:grid;place-items:center;min-height:100vh;color:var(--muted)" id="boot-status">Booting scripts… <span id="boot-step" style="margin-left:8px;font-family:monospace;color:#e26d5c"></span></div>
   </div>
+<script>
+  function setBoot(s) {
+    var el = document.getElementById('boot-step');
+    if (el) el.textContent = s;
+  }
+  window.addEventListener('load', () => setBoot('window loaded, awaiting script transforms'));
+</script>
 
 <script>
   // Surface any fatal runtime error to the page so we don't get stuck on Loading…
@@ -697,8 +704,14 @@ function SignIn() {
   );
 }
 
+if (typeof setBoot === 'function') setBoot('inline script running');
+if (!window.supabase) { showFatal && showFatal('Supabase CDN failed to load (window.supabase is undefined)'); throw new Error('Supabase CDN failed to load'); }
+if (!window.React) { showFatal && showFatal('React CDN failed to load'); throw new Error('React CDN failed to load'); }
+if (!window.ReactDOM) { showFatal && showFatal('ReactDOM CDN failed to load'); throw new Error('ReactDOM CDN failed to load'); }
+if (typeof setBoot === 'function') setBoot('mounting React');
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
+if (typeof setBoot === 'function') setBoot('React mounted, calling initAuth');
 window.ZH.db.initAuth();
 
 
