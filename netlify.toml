@@ -1,0 +1,9 @@
+[build]
+  publish = "."
+  ignore = "/bin/false"
+
+# Don't deploy sync/ — it's only for GH Actions
+[[redirects]]
+  from = "/sync/*"
+  to = "/"
+  status = 404
