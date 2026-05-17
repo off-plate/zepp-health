@@ -145,6 +145,20 @@
     <div style="display:grid;place-items:center;min-height:100vh;color:var(--muted)">Loading…</div>
   </div>
 
+<script>
+  // Surface any fatal runtime error to the page so we don't get stuck on Loading…
+  function showFatal(msg) {
+    const root = document.getElementById('root');
+    if (root) root.innerHTML = '<div style="padding:24px;font-family:monospace;color:#e26d5c;max-width:760px;margin:40px auto;white-space:pre-wrap;font-size:13px"><b>Error</b>\n\n' + String(msg) + '</div>';
+  }
+  window.addEventListener('error', (e) => {
+    showFatal((e.message || e.error) + '\nat ' + (e.filename || '') + ':' + (e.lineno || '?'));
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    showFatal('Promise rejection: ' + (e.reason && (e.reason.message || e.reason.stack) || e.reason));
+  });
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>

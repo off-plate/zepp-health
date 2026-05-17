@@ -22,13 +22,26 @@ function useStore() {
 }
 
 async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  state.session = session;
-  if (session) await pullAll();
-  state.loading = false;
-  emit();
+  try {
+    console.log('[ZH] initAuth start');
+    const { data: { session }, error: sessErr } = await sb.auth.getSession();
+    if (sessErr) console.error('[ZH] getSession error:', sessErr);
+    console.log('[ZH] session:', session ? session.user.email : 'none');
+    state.session = session;
+    if (session) {
+      console.log('[ZH] pulling data…');
+      await pullAll();
+    }
+  } catch (err) {
+    console.error('[ZH] initAuth fatal:', err);
+    state.error = err.message || String(err);
+  } finally {
+    state.loading = false;
+    emit();
+  }
 
   sb.auth.onAuthStateChange(async (_event, session) => {
+    console.log('[ZH] auth state change:', _event, session ? session.user.email : 'none');
     state.session = session;
     if (session) await pullAll();
     else { state.wellness = []; state.activities = []; }
@@ -44,6 +57,7 @@ async function signIn(email) {
 async function signOut() { await sb.auth.signOut(); }
 
 async function pullAll() {
+  console.log('[ZH] pullAll start');
   try {
     const oldest = new Date(); oldest.setDate(oldest.getDate() - 365);
     const oldestISO = oldest.toISOString().slice(0, 10);
@@ -53,6 +67,10 @@ async function pullAll() {
       sb.from('zepp_activities').select('*').gte('start_date', oldest.toISOString()).order('start_date', { ascending: false }),
       sb.from('zepp_sync_log').select('*').order('ran_at', { ascending: false }).limit(1)
     ]);
+    if (w.error) console.error('[ZH] wellness error:', w.error);
+    if (a.error) console.error('[ZH] activities error:', a.error);
+    if (log.error) console.error('[ZH] log error:', log.error);
+    console.log('[ZH] pulled', { wellness: (w.data||[]).length, activities: (a.data||[]).length });
     state.wellness = w.data || [];
     state.activities = a.data || [];
     state.lastSync = (log.data && log.data[0]) || null;

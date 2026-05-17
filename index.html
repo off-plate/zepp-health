@@ -145,6 +145,20 @@
     <div style="display:grid;place-items:center;min-height:100vh;color:var(--muted)">Loading…</div>
   </div>
 
+<script>
+  // Surface any fatal runtime error to the page so we don't get stuck on Loading…
+  function showFatal(msg) {
+    const root = document.getElementById('root');
+    if (root) root.innerHTML = '<div style="padding:24px;font-family:monospace;color:#e26d5c;max-width:760px;margin:40px auto;white-space:pre-wrap;font-size:13px"><b>Error</b>\n\n' + String(msg) + '</div>';
+  }
+  window.addEventListener('error', (e) => {
+    showFatal((e.message || e.error) + '\nat ' + (e.filename || '') + ':' + (e.lineno || '?'));
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    showFatal('Promise rejection: ' + (e.reason && (e.reason.message || e.reason.stack) || e.reason));
+  });
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
@@ -344,13 +358,26 @@ function useStore() {
 }
 
 async function initAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  state.session = session;
-  if (session) await pullAll();
-  state.loading = false;
-  emit();
+  try {
+    console.log('[ZH] initAuth start');
+    const { data: { session }, error: sessErr } = await sb.auth.getSession();
+    if (sessErr) console.error('[ZH] getSession error:', sessErr);
+    console.log('[ZH] session:', session ? session.user.email : 'none');
+    state.session = session;
+    if (session) {
+      console.log('[ZH] pulling data…');
+      await pullAll();
+    }
+  } catch (err) {
+    console.error('[ZH] initAuth fatal:', err);
+    state.error = err.message || String(err);
+  } finally {
+    state.loading = false;
+    emit();
+  }
 
   sb.auth.onAuthStateChange(async (_event, session) => {
+    console.log('[ZH] auth state change:', _event, session ? session.user.email : 'none');
     state.session = session;
     if (session) await pullAll();
     else { state.wellness = []; state.activities = []; }
@@ -366,6 +393,7 @@ async function signIn(email) {
 async function signOut() { await sb.auth.signOut(); }
 
 async function pullAll() {
+  console.log('[ZH] pullAll start');
   try {
     const oldest = new Date(); oldest.setDate(oldest.getDate() - 365);
     const oldestISO = oldest.toISOString().slice(0, 10);
@@ -375,6 +403,10 @@ async function pullAll() {
       sb.from('zepp_activities').select('*').gte('start_date', oldest.toISOString()).order('start_date', { ascending: false }),
       sb.from('zepp_sync_log').select('*').order('ran_at', { ascending: false }).limit(1)
     ]);
+    if (w.error) console.error('[ZH] wellness error:', w.error);
+    if (a.error) console.error('[ZH] activities error:', a.error);
+    if (log.error) console.error('[ZH] log error:', log.error);
+    console.log('[ZH] pulled', { wellness: (w.data||[]).length, activities: (a.data||[]).length });
     state.wellness = w.data || [];
     state.activities = a.data || [];
     state.lastSync = (log.data && log.data[0]) || null;
@@ -451,7 +483,8 @@ function App() {
   const [rangeKey, setRangeKey] = React.useState('30');
   const range = RANGES.find(r => r.key === rangeKey) || RANGES[1];
 
-  if (s.loading) return <div className="signin-wrap"><div className="text-muted">Loading…</div></div>;
+  if (s.loading) return <div className="signin-wrap"><div className="text-muted">Loading… {s.error && <div style={{color: 'var(--accent)', marginTop: 12, fontSize: 12, fontFamily: 'monospace', maxWidth: 600}}>{s.error}</div>}</div></div>;
+  if (s.error) return <div className="signin-wrap"><div className="card" style={{maxWidth: 500}}><h3 style={{margin: 0}}>Error</h3><pre style={{fontSize: 12, whiteSpace: 'pre-wrap', color: 'var(--accent)'}}>{s.error}</pre></div></div>;
   if (!s.session) return <SignIn />;
 
   // Slice data to the selected range

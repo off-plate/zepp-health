@@ -60,7 +60,8 @@ function App() {
   const [rangeKey, setRangeKey] = React.useState('30');
   const range = RANGES.find(r => r.key === rangeKey) || RANGES[1];
 
-  if (s.loading) return <div className="signin-wrap"><div className="text-muted">Loading…</div></div>;
+  if (s.loading) return <div className="signin-wrap"><div className="text-muted">Loading… {s.error && <div style={{color: 'var(--accent)', marginTop: 12, fontSize: 12, fontFamily: 'monospace', maxWidth: 600}}>{s.error}</div>}</div></div>;
+  if (s.error) return <div className="signin-wrap"><div className="card" style={{maxWidth: 500}}><h3 style={{margin: 0}}>Error</h3><pre style={{fontSize: 12, whiteSpace: 'pre-wrap', color: 'var(--accent)'}}>{s.error}</pre></div></div>;
   if (!s.session) return <SignIn />;
 
   // Slice data to the selected range
