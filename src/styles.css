@@ -1157,3 +1157,4 @@ html, body, #root {
 }
 .tbl tr:hover td { background: var(--glass); }
 .tbl tr:last-child td { border-bottom: 0; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

@@ -378,4 +378,32 @@ async function loadAllData(session) {
   });
 }
 
-window.ZH_ADAPTER = { loadAllData };
+// Sync trigger — calls a Netlify function that holds the GH token server-side.
+async function triggerSync(lookbackDays = 60) {
+  const res = await fetch('/.netlify/functions/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lookback_days: String(lookbackDays) })
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error('Sync trigger failed: ' + res.status + ' ' + t);
+  }
+  return true;
+}
+
+// Wait for the most recent sync_log row to be newer than `since`. Polls every 5s up to 90s.
+async function waitForSyncComplete(session, since) {
+  const headers = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + session.access_token };
+  for (let i = 0; i < 18; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    const res = await fetch(SUPABASE_URL + `/rest/v1/zepp_sync_log?select=ran_at,ok&order=ran_at.desc&limit=1`, { headers });
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows[0] && new Date(rows[0].ran_at) > since) return rows[0];
+    }
+  }
+  return null;
+}
+
+window.ZH_ADAPTER = { loadAllData, triggerSync, waitForSyncComplete };

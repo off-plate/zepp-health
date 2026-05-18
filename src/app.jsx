@@ -44,12 +44,30 @@ function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const [syncing, setSyncing] = useState(false);
+
   async function refresh() {
     if (!auth.session) return;
     try {
       await window.ZH_ADAPTER.loadAllData(auth.session);
       setDataVer(v => v + 1);
     } catch (e) { setDataError(e.message); }
+  }
+
+  async function syncNow() {
+    if (!auth.session || syncing) return;
+    setSyncing(true);
+    const since = window.zhLastSync || new Date(0);
+    try {
+      await window.ZH_ADAPTER.triggerSync(60);
+      const result = await window.ZH_ADAPTER.waitForSyncComplete(auth.session, since);
+      if (result) await window.ZH_ADAPTER.loadAllData(auth.session);
+      setDataVer(v => v + 1);
+    } catch (e) {
+      console.error('[ZH] sync now failed:', e);
+    } finally {
+      setSyncing(false);
+    }
   }
 
   if (auth.loading) return <LoadingScreen msg="Loading…" />;
@@ -90,8 +108,10 @@ function App() {
         </nav>
 
         <div className="user-chip">
-          <button className="user-sync" onClick={refresh} title="Refresh data" style={{ background: 'transparent', border: 0, color: 'inherit', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-            <span className="icon sm" style={{ color: 'var(--steps)', fontSize: 14 }}>sync</span> Synced {lastSyncLabel}
+          <button className="user-sync" onClick={syncNow} disabled={syncing} title="Pull fresh data from Intervals.icu"
+            style={{ background: 'transparent', border: 0, color: 'inherit', cursor: syncing ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, opacity: syncing ? 0.6 : 1 }}>
+            <span className="icon sm" style={{ color: 'var(--steps)', fontSize: 14, animation: syncing ? 'spin 1s linear infinite' : 'none' }}>sync</span>
+            {syncing ? 'Syncing…' : `Synced ${lastSyncLabel}`}
           </button>
           <span className="user-avatar" onClick={() => { if (confirm('Sign out?')) window.ZH.db.signOut(); }} style={{ cursor: 'pointer' }}>MF</span>
         </div>

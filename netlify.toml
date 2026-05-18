@@ -2,7 +2,10 @@
   publish = "."
   ignore = "/bin/false"
 
-# Don't deploy sync/ — it's only for GH Actions
+[functions]
+  directory = "netlify/functions"
+
+# Block the GH Actions sync source folder from public access
 [[redirects]]
   from = "/sync/*"
   to = "/"

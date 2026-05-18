@@ -1171,6 +1171,7 @@ html, body, #root {
 }
 .tbl tr:hover td { background: var(--glass); }
 .tbl tr:last-child td { border-bottom: 0; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
 </style>
 </head>
@@ -1809,8 +1810,47 @@ async function loadAllData(session) {
     zhLastSync: lastSync
   });
 }
+
+// Sync trigger — calls a Netlify function that holds the GH token server-side.
+async function triggerSync(lookbackDays = 60) {
+  const res = await fetch('/.netlify/functions/sync', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      lookback_days: String(lookbackDays)
+    })
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error('Sync trigger failed: ' + res.status + ' ' + t);
+  }
+  return true;
+}
+
+// Wait for the most recent sync_log row to be newer than `since`. Polls every 5s up to 90s.
+async function waitForSyncComplete(session, since) {
+  const headers = {
+    apikey: SUPABASE_KEY,
+    Authorization: 'Bearer ' + session.access_token
+  };
+  for (let i = 0; i < 18; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    const res = await fetch(SUPABASE_URL + `/rest/v1/zepp_sync_log?select=ran_at,ok&order=ran_at.desc&limit=1`, {
+      headers
+    });
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows[0] && new Date(rows[0].ran_at) > since) return rows[0];
+    }
+  }
+  return null;
+}
 window.ZH_ADAPTER = {
-  loadAllData
+  loadAllData,
+  triggerSync,
+  waitForSyncComplete
 };
 
 // ===== src/components.jsx =====
@@ -6115,6 +6155,7 @@ function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
+  const [syncing, setSyncing] = useState(false);
   async function refresh() {
     if (!auth.session) return;
     try {
@@ -6122,6 +6163,21 @@ function App() {
       setDataVer(v => v + 1);
     } catch (e) {
       setDataError(e.message);
+    }
+  }
+  async function syncNow() {
+    if (!auth.session || syncing) return;
+    setSyncing(true);
+    const since = window.zhLastSync || new Date(0);
+    try {
+      await window.ZH_ADAPTER.triggerSync(60);
+      const result = await window.ZH_ADAPTER.waitForSyncComplete(auth.session, since);
+      if (result) await window.ZH_ADAPTER.loadAllData(auth.session);
+      setDataVer(v => v + 1);
+    } catch (e) {
+      console.error('[ZH] sync now failed:', e);
+    } finally {
+      setSyncing(false);
     }
   }
   if (auth.loading) return /*#__PURE__*/React.createElement(LoadingScreen, {
@@ -6172,24 +6228,27 @@ function App() {
     className: "user-chip"
   }, /*#__PURE__*/React.createElement("button", {
     className: "user-sync",
-    onClick: refresh,
-    title: "Refresh data",
+    onClick: syncNow,
+    disabled: syncing,
+    title: "Pull fresh data from Intervals.icu",
     style: {
       background: 'transparent',
       border: 0,
       color: 'inherit',
-      cursor: 'pointer',
+      cursor: syncing ? 'wait' : 'pointer',
       display: 'inline-flex',
       alignItems: 'center',
-      gap: 4
+      gap: 4,
+      opacity: syncing ? 0.6 : 1
     }
   }, /*#__PURE__*/React.createElement("span", {
     className: "icon sm",
     style: {
       color: 'var(--steps)',
-      fontSize: 14
+      fontSize: 14,
+      animation: syncing ? 'spin 1s linear infinite' : 'none'
     }
-  }, "sync"), " Synced ", lastSyncLabel), /*#__PURE__*/React.createElement("span", {
+  }, "sync"), syncing ? 'Syncing…' : `Synced ${lastSyncLabel}`), /*#__PURE__*/React.createElement("span", {
     className: "user-avatar",
     onClick: () => {
       if (confirm('Sign out?')) window.ZH.db.signOut();
