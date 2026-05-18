@@ -231,7 +231,9 @@ function Stat({ label, value, unit, prev, cur, better }) {
 }
 
 function SignIn() {
+  const [mode, setMode] = React.useState('password'); // 'password' | 'magic'
   const [email, setEmail] = React.useState('mihael.florian@gmail.com');
+  const [password, setPassword] = React.useState('');
   const [sent, setSent] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
@@ -239,8 +241,14 @@ function SignIn() {
   async function submit(e) {
     e.preventDefault();
     setError(null); setBusy(true);
-    try { await window.ZH.db.signIn(email.trim()); setSent(true); }
-    catch (e) { setError(e.message || 'Sign in failed'); }
+    try {
+      if (mode === 'password') {
+        await window.ZH.db.signInWithPassword(email.trim(), password);
+      } else {
+        await window.ZH.db.signIn(email.trim());
+        setSent(true);
+      }
+    } catch (e) { setError(e.message || 'Sign in failed'); }
     finally { setBusy(false); }
   }
 
@@ -263,10 +271,21 @@ function SignIn() {
               <label>Email</label>
               <input className="input" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
             </div>
+            {mode === 'password' && (
+              <div className="field">
+                <label>Password</label>
+                <input className="input" type="password" required value={password} onChange={e => setPassword(e.target.value)} autoFocus />
+              </div>
+            )}
             {error && <div className="text-sm" style={{color: 'var(--accent)', marginBottom: 12}}>{error}</div>}
             <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
-              {busy ? 'Sending…' : 'Send magic link'}
+              {busy ? '…' : (mode === 'password' ? 'Sign in' : 'Send magic link')}
             </button>
+            <div style={{textAlign: 'center', marginTop: 12}}>
+              <button type="button" className="btn-ghost btn btn-sm" onClick={() => { setMode(mode === 'password' ? 'magic' : 'password'); setError(null); }}>
+                {mode === 'password' ? 'Use magic link instead' : 'Use password instead'}
+              </button>
+            </div>
           </form>
         )}
       </div>

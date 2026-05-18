@@ -57,6 +57,10 @@ async function signIn(email) {
   const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
   if (error) throw error;
 }
+async function signInWithPassword(email, password) {
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+}
 async function signOut() { await sb.auth.signOut(); }
 
 async function pullAll() {
@@ -84,4 +88,4 @@ async function pullAll() {
 }
 
 window.ZH = window.ZH || {};
-window.ZH.db = { useStore, initAuth, signIn, signOut, pullAll, getSession: () => state.session };
+window.ZH.db = { useStore, initAuth, signIn, signInWithPassword, signOut, pullAll, getSession: () => state.session };
