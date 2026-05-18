@@ -53,7 +53,7 @@ function mapWellness(rows) {
 
 // Fill missing days in [start, end] with null-valued rows so charts stay continuous.
 function fillDaily(rows, days) {
-  const byDay = new Map(rows.map(r => [r.day.toISOString().slice(0, 10), r]));
+  const byDay = new Map(rows.map(r => [r.date.toISOString().slice(0, 10), r]));
   const out = [];
   const today = new Date(); today.setHours(0, 0, 0, 0);
   for (let i = days - 1; i >= 0; i--) {
