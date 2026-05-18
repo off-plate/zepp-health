@@ -327,19 +327,30 @@ function buildCalendar(activities) {
 }
 
 async function loadAllData(session) {
-  const headers = {
-    apikey: SUPABASE_KEY,
-    Authorization: 'Bearer ' + session.access_token
-  };
+  let effectiveSession = session;
   const oldest = new Date(); oldest.setDate(oldest.getDate() - 365);
   const oldestDate = oldest.toISOString().slice(0, 10);
   const oldestTS = oldest.toISOString();
 
-  const [wRes, aRes, lRes] = await Promise.all([
-    fetch(SUPABASE_URL + `/rest/v1/zepp_wellness?select=*&day=gte.${oldestDate}&order=day.asc&limit=400`, { headers }),
-    fetch(SUPABASE_URL + `/rest/v1/zepp_activities?select=*&start_date=gte.${oldestTS}&order=start_date.desc&limit=500`, { headers }),
-    fetch(SUPABASE_URL + `/rest/v1/zepp_sync_log?select=*&order=ran_at.desc&limit=1`, { headers })
-  ]);
+  async function doFetch(s) {
+    const headers = { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + s.access_token };
+    return Promise.all([
+      fetch(SUPABASE_URL + `/rest/v1/zepp_wellness?select=*&day=gte.${oldestDate}&order=day.asc&limit=400`, { headers }),
+      fetch(SUPABASE_URL + `/rest/v1/zepp_activities?select=*&start_date=gte.${oldestTS}&order=start_date.desc&limit=500`, { headers }),
+      fetch(SUPABASE_URL + `/rest/v1/zepp_sync_log?select=*&order=ran_at.desc&limit=1`, { headers })
+    ]);
+  }
+
+  let [wRes, aRes, lRes] = await doFetch(effectiveSession);
+
+  // 401 = expired access token. Try a refresh and retry once.
+  if (wRes.status === 401 || aRes.status === 401) {
+    console.log('[ZH] 401, refreshing session…');
+    const refreshed = await window.ZH.db.refreshSession();
+    if (!refreshed) throw new Error('Session expired — please sign in again.');
+    effectiveSession = refreshed;
+    [wRes, aRes, lRes] = await doFetch(effectiveSession);
+  }
   if (!wRes.ok || !aRes.ok) throw new Error('Data fetch failed: ' + wRes.status + '/' + aRes.status);
 
   const wRaw = await wRes.json();
