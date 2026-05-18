@@ -356,30 +356,31 @@ function ScreenAwards({ onUnlock }) {
         </div>
         <div className="col" style={{ justifyContent: 'center' }}>
           <div className="muted" style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 8 }}>Latest unlock</div>
-          <div className="row" style={{ gap: 14 }}>
-            <div style={{ width: 64, height: 64 }}><BadgeArt kind="lightning" accent="var(--cardio)" tier="Gold" /></div>
-            <div>
-              <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>5k PR — 21:14</div>
-              <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>Earned 11 May · Gold tier</div>
-              <button
-                onClick={() => onUnlock(awards.find(a => a.id === 'pr5k'))}
-                style={{
-                  marginTop: 8,
-                  padding: '6px 12px',
-                  background: 'var(--glass-bright)',
-                  border: '1px solid var(--hairline-bright)',
-                  borderRadius: 999,
-                  color: 'var(--text-1)',
-                  fontSize: 11,
-                  fontWeight: 500,
-                  fontFamily: 'inherit',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}><Icon name="replay" className="sm" style={{ fontSize: 12 }} /> Replay unlock</button>
-            </div>
-          </div>
+          {(() => {
+            const latest = awards.filter(a => a.unlocked).slice(-1)[0];
+            if (!latest) {
+              return <div className="muted" style={{ fontSize: 13 }}>No awards unlocked yet — keep training.</div>;
+            }
+            return (
+              <div className="row" style={{ gap: 14 }}>
+                <div style={{ width: 64, height: 64 }}><BadgeArt kind={latest.badge} accent={latest.accent} tier={latest.tier} /></div>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em' }}>{latest.name}</div>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>{latest.tier} tier</div>
+                  <button
+                    onClick={() => onUnlock(latest)}
+                    style={{
+                      marginTop: 8, padding: '6px 12px',
+                      background: 'var(--glass-bright)',
+                      border: '1px solid var(--hairline-bright)',
+                      borderRadius: 999, color: 'var(--text-1)',
+                      fontSize: 11, fontWeight: 500, fontFamily: 'inherit',
+                      cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}><Icon name="replay" className="sm" style={{ fontSize: 12 }} /> Replay unlock</button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
