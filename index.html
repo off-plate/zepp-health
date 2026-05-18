@@ -167,78 +167,131 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
 
-<script type="text/babel" data-presets="react">
+<script>
 // ===== src/charts.jsx =====
 // Hand-rolled SVG chart helpers. Dark theme, mobile-friendly.
 
 const COLORS = {
-  accent: '#e26d5c', green: '#6ec27a', blue: '#7aa8d8', yellow: '#e7c66b',
-  purple: '#c08dd6', muted: '#8a8a85', grid: '#232328'
+  accent: '#e26d5c',
+  green: '#6ec27a',
+  blue: '#7aa8d8',
+  yellow: '#e7c66b',
+  purple: '#c08dd6',
+  muted: '#8a8a85',
+  grid: '#232328'
 };
-
 function fmtDay(d) {
   const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+  return dt.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short'
+  });
 }
 
 // Generic bar chart. data: [{ day, value }]
-function BarChart({ data, color = COLORS.accent, unit = '', height = 160, formatValue = v => v }) {
-  if (!data || data.length === 0) return <Empty />;
-  const W = 600, H = height, P = { top: 16, right: 8, bottom: 24, left: 36 };
+function BarChart({
+  data,
+  color = COLORS.accent,
+  unit = '',
+  height = 160,
+  formatValue = v => v
+}) {
+  if (!data || data.length === 0) return /*#__PURE__*/React.createElement(Empty, null);
+  const W = 600,
+    H = height,
+    P = {
+      top: 16,
+      right: 8,
+      bottom: 24,
+      left: 36
+    };
   const innerW = W - P.left - P.right;
   const innerH = H - P.top - P.bottom;
   const values = data.map(d => d.value || 0);
   const max = Math.max(...values, 1);
   const barW = innerW / data.length * 0.72;
   const step = innerW / data.length;
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{width: '100%', height: 'auto', display: 'block'}}>
-      {[0.25, 0.5, 0.75, 1].map(p => (
-        <line key={p} x1={P.left} x2={W - P.right} y1={P.top + innerH * (1 - p)} y2={P.top + innerH * (1 - p)} stroke={COLORS.grid} strokeWidth={1} />
-      ))}
-      {[0.5, 1].map(p => (
-        <text key={p} x={P.left - 6} y={P.top + innerH * (1 - p) + 4} textAnchor="end" fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">
-          {formatValue(max * p)}
-        </text>
-      ))}
-      {data.map((d, i) => {
-        const v = d.value || 0;
-        const h = (v / max) * innerH;
-        const x = P.left + i * step + (step - barW) / 2;
-        const y = P.top + innerH - h;
-        return <rect key={i} x={x} y={y} width={barW} height={h} fill={color} opacity={v ? 0.85 : 0.15} rx={2} />;
-      })}
-      {/* X labels: first, mid, last */}
-      {[0, Math.floor(data.length / 2), data.length - 1].map(i => (
-        <text key={i} x={P.left + i * step + step / 2} y={H - 6} textAnchor="middle" fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">
-          {fmtDay(data[i].day)}
-        </text>
-      ))}
-    </svg>
-  );
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${W} ${H}`,
+    style: {
+      width: '100%',
+      height: 'auto',
+      display: 'block'
+    }
+  }, [0.25, 0.5, 0.75, 1].map(p => /*#__PURE__*/React.createElement("line", {
+    key: p,
+    x1: P.left,
+    x2: W - P.right,
+    y1: P.top + innerH * (1 - p),
+    y2: P.top + innerH * (1 - p),
+    stroke: COLORS.grid,
+    strokeWidth: 1
+  })), [0.5, 1].map(p => /*#__PURE__*/React.createElement("text", {
+    key: p,
+    x: P.left - 6,
+    y: P.top + innerH * (1 - p) + 4,
+    textAnchor: "end",
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, formatValue(max * p))), data.map((d, i) => {
+    const v = d.value || 0;
+    const h = v / max * innerH;
+    const x = P.left + i * step + (step - barW) / 2;
+    const y = P.top + innerH - h;
+    return /*#__PURE__*/React.createElement("rect", {
+      key: i,
+      x: x,
+      y: y,
+      width: barW,
+      height: h,
+      fill: color,
+      opacity: v ? 0.85 : 0.15,
+      rx: 2
+    });
+  }), [0, Math.floor(data.length / 2), data.length - 1].map(i => /*#__PURE__*/React.createElement("text", {
+    key: i,
+    x: P.left + i * step + step / 2,
+    y: H - 6,
+    textAnchor: "middle",
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, fmtDay(data[i].day))));
 }
 
 // Line chart with optional rolling-average overlay. data: [{ day, value }]
-function LineChart({ data, color = COLORS.accent, height = 160, overlay = true, formatValue = v => v }) {
-  if (!data || data.length === 0) return <Empty />;
-  const W = 600, H = height, P = { top: 16, right: 8, bottom: 24, left: 36 };
+function LineChart({
+  data,
+  color = COLORS.accent,
+  height = 160,
+  overlay = true,
+  formatValue = v => v
+}) {
+  if (!data || data.length === 0) return /*#__PURE__*/React.createElement(Empty, null);
+  const W = 600,
+    H = height,
+    P = {
+      top: 16,
+      right: 8,
+      bottom: 24,
+      left: 36
+    };
   const innerW = W - P.left - P.right;
   const innerH = H - P.top - P.bottom;
   const valid = data.filter(d => d.value != null);
-  if (valid.length === 0) return <Empty />;
+  if (valid.length === 0) return /*#__PURE__*/React.createElement(Empty, null);
   const values = valid.map(d => d.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = Math.max(max - min, 1);
   const pad = range * 0.1;
-  const lo = min - pad, hi = max + pad;
-
-  const xAt = i => P.left + (data.length === 1 ? innerW / 2 : (i / (data.length - 1)) * innerW);
+  const lo = min - pad,
+    hi = max + pad;
+  const xAt = i => P.left + (data.length === 1 ? innerW / 2 : i / (data.length - 1) * innerW);
   const yAt = v => P.top + innerH * (1 - (v - lo) / (hi - lo));
 
   // Rolling 7-day average
@@ -252,12 +305,14 @@ function LineChart({ data, color = COLORS.accent, height = 160, overlay = true, 
   // Build line path skipping nulls
   let path = '';
   data.forEach((d, i) => {
-    if (d.value == null) { path += ' M'; return; }
-    const cmd = (i === 0 || path.endsWith(' M')) ? 'M' : 'L';
+    if (d.value == null) {
+      path += ' M';
+      return;
+    }
+    const cmd = i === 0 || path.endsWith(' M') ? 'M' : 'L';
     path += (path.endsWith(' M') ? '' : ' ') + cmd + xAt(i) + ',' + yAt(d.value);
   });
   path = path.replace(/ M$/, '').replace(/ M /g, ' ');
-
   let rolledPath = '';
   if (overlay) {
     rolled.forEach((v, i) => {
@@ -265,46 +320,87 @@ function LineChart({ data, color = COLORS.accent, height = 160, overlay = true, 
       rolledPath += (rolledPath ? ' L' : 'M') + xAt(i) + ',' + yAt(v);
     });
   }
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{width: '100%', height: 'auto', display: 'block'}}>
-      {[0.25, 0.5, 0.75, 1].map(p => (
-        <line key={p} x1={P.left} x2={W - P.right} y1={P.top + innerH * (1 - p)} y2={P.top + innerH * (1 - p)} stroke={COLORS.grid} strokeWidth={1} />
-      ))}
-      <text x={P.left - 6} y={P.top + 4} textAnchor="end" fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">{formatValue(hi)}</text>
-      <text x={P.left - 6} y={P.top + innerH + 4} textAnchor="end" fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">{formatValue(lo)}</text>
-
-      {overlay && rolledPath && <path d={rolledPath} fill="none" stroke={color} strokeWidth={3} opacity={0.6} />}
-      <path d={path} fill="none" stroke={color} strokeWidth={1.5} opacity={overlay ? 0.45 : 1} />
-
-      {data.map((d, i) => d.value != null ? (
-        <circle key={i} cx={xAt(i)} cy={yAt(d.value)} r={2.2} fill={color} />
-      ) : null)}
-
-      {[0, Math.floor(data.length / 2), data.length - 1].map(i => (
-        <text key={i} x={xAt(i)} y={H - 6} textAnchor={i === 0 ? 'start' : i === data.length - 1 ? 'end' : 'middle'} fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">
-          {fmtDay(data[i].day)}
-        </text>
-      ))}
-    </svg>
-  );
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${W} ${H}`,
+    style: {
+      width: '100%',
+      height: 'auto',
+      display: 'block'
+    }
+  }, [0.25, 0.5, 0.75, 1].map(p => /*#__PURE__*/React.createElement("line", {
+    key: p,
+    x1: P.left,
+    x2: W - P.right,
+    y1: P.top + innerH * (1 - p),
+    y2: P.top + innerH * (1 - p),
+    stroke: COLORS.grid,
+    strokeWidth: 1
+  })), /*#__PURE__*/React.createElement("text", {
+    x: P.left - 6,
+    y: P.top + 4,
+    textAnchor: "end",
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, formatValue(hi)), /*#__PURE__*/React.createElement("text", {
+    x: P.left - 6,
+    y: P.top + innerH + 4,
+    textAnchor: "end",
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, formatValue(lo)), overlay && rolledPath && /*#__PURE__*/React.createElement("path", {
+    d: rolledPath,
+    fill: "none",
+    stroke: color,
+    strokeWidth: 3,
+    opacity: 0.6
+  }), /*#__PURE__*/React.createElement("path", {
+    d: path,
+    fill: "none",
+    stroke: color,
+    strokeWidth: 1.5,
+    opacity: overlay ? 0.45 : 1
+  }), data.map((d, i) => d.value != null ? /*#__PURE__*/React.createElement("circle", {
+    key: i,
+    cx: xAt(i),
+    cy: yAt(d.value),
+    r: 2.2,
+    fill: color
+  }) : null), [0, Math.floor(data.length / 2), data.length - 1].map(i => /*#__PURE__*/React.createElement("text", {
+    key: i,
+    x: xAt(i),
+    y: H - 6,
+    textAnchor: i === 0 ? 'start' : i === data.length - 1 ? 'end' : 'middle',
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, fmtDay(data[i].day))));
 }
 
 // Training load: CTL (fitness), ATL (fatigue), Form (CTL-ATL)
-function TrainingLoadChart({ data, height = 200 }) {
-  if (!data || data.length === 0) return <Empty />;
-  const W = 600, H = height, P = { top: 16, right: 8, bottom: 24, left: 36 };
+function TrainingLoadChart({
+  data,
+  height = 200
+}) {
+  if (!data || data.length === 0) return /*#__PURE__*/React.createElement(Empty, null);
+  const W = 600,
+    H = height,
+    P = {
+      top: 16,
+      right: 8,
+      bottom: 24,
+      left: 36
+    };
   const innerW = W - P.left - P.right;
   const innerH = H - P.top - P.bottom;
   const all = data.flatMap(d => [d.ctl, d.atl]).filter(v => v != null);
-  if (all.length === 0) return <Empty />;
+  if (all.length === 0) return /*#__PURE__*/React.createElement(Empty, null);
   const min = Math.min(...all, 0);
   const max = Math.max(...all, 1);
   const range = Math.max(max - min, 1);
-
-  const xAt = i => P.left + (data.length === 1 ? innerW / 2 : (i / (data.length - 1)) * innerW);
+  const xAt = i => P.left + (data.length === 1 ? innerW / 2 : i / (data.length - 1) * innerW);
   const yAt = v => P.top + innerH * (1 - (v - min) / range);
-
   function pathFor(field) {
     let p = '';
     data.forEach((d, i) => {
@@ -313,47 +409,96 @@ function TrainingLoadChart({ data, height = 200 }) {
     });
     return p;
   }
-
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{width: '100%', height: 'auto', display: 'block'}}>
-      {[0.25, 0.5, 0.75, 1].map(p => (
-        <line key={p} x1={P.left} x2={W - P.right} y1={P.top + innerH * (1 - p)} y2={P.top + innerH * (1 - p)} stroke={COLORS.grid} strokeWidth={1} />
-      ))}
-      <path d={pathFor('ctl')} fill="none" stroke={COLORS.blue} strokeWidth={2.2} />
-      <path d={pathFor('atl')} fill="none" stroke={COLORS.accent} strokeWidth={2.2} />
-      <text x={P.left - 6} y={P.top + 4} textAnchor="end" fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">{Math.round(max)}</text>
-      <text x={P.left - 6} y={P.top + innerH + 4} textAnchor="end" fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">{Math.round(min)}</text>
-      {[0, Math.floor(data.length / 2), data.length - 1].map(i => (
-        <text key={i} x={xAt(i)} y={H - 6} textAnchor={i === 0 ? 'start' : i === data.length - 1 ? 'end' : 'middle'} fill={COLORS.muted} fontSize="10" fontFamily="JetBrains Mono">
-          {fmtDay(data[i].day)}
-        </text>
-      ))}
-    </svg>
-  );
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${W} ${H}`,
+    style: {
+      width: '100%',
+      height: 'auto',
+      display: 'block'
+    }
+  }, [0.25, 0.5, 0.75, 1].map(p => /*#__PURE__*/React.createElement("line", {
+    key: p,
+    x1: P.left,
+    x2: W - P.right,
+    y1: P.top + innerH * (1 - p),
+    y2: P.top + innerH * (1 - p),
+    stroke: COLORS.grid,
+    strokeWidth: 1
+  })), /*#__PURE__*/React.createElement("path", {
+    d: pathFor('ctl'),
+    fill: "none",
+    stroke: COLORS.blue,
+    strokeWidth: 2.2
+  }), /*#__PURE__*/React.createElement("path", {
+    d: pathFor('atl'),
+    fill: "none",
+    stroke: COLORS.accent,
+    strokeWidth: 2.2
+  }), /*#__PURE__*/React.createElement("text", {
+    x: P.left - 6,
+    y: P.top + 4,
+    textAnchor: "end",
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, Math.round(max)), /*#__PURE__*/React.createElement("text", {
+    x: P.left - 6,
+    y: P.top + innerH + 4,
+    textAnchor: "end",
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, Math.round(min)), [0, Math.floor(data.length / 2), data.length - 1].map(i => /*#__PURE__*/React.createElement("text", {
+    key: i,
+    x: xAt(i),
+    y: H - 6,
+    textAnchor: i === 0 ? 'start' : i === data.length - 1 ? 'end' : 'middle',
+    fill: COLORS.muted,
+    fontSize: "10",
+    fontFamily: "JetBrains Mono"
+  }, fmtDay(data[i].day))));
 }
-
 function Empty() {
-  return <div style={{padding: '40px 12px', textAlign: 'center', color: 'var(--muted)', fontSize: 13}}>No data in this range yet.</div>;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '40px 12px',
+      textAlign: 'center',
+      color: 'var(--muted)',
+      fontSize: 13
+    }
+  }, "No data in this range yet.");
 }
-
 window.ZH = window.ZH || {};
-window.ZH.charts = { BarChart, LineChart, TrainingLoadChart, COLORS };
-
+window.ZH.charts = {
+  BarChart,
+  LineChart,
+  TrainingLoadChart,
+  COLORS
+};
 
 // ===== src/data.jsx =====
 // Supabase client + data hooks for Zepp Health.
 
 const SUPABASE_URL = 'https://fhfempisopwsdkmvywbt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_MDxQPm0SzLHFTnDqg-eyyQ_0yposnES';
-
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
 });
-
 const listeners = new Set();
-let state = { wellness: [], activities: [], lastSync: null, session: null, loading: true };
-
-function emit() { listeners.forEach(fn => fn()); }
+let state = {
+  wellness: [],
+  activities: [],
+  lastSync: null,
+  session: null,
+  loading: true
+};
+function emit() {
+  listeners.forEach(fn => fn());
+}
 function useStore() {
   const [, force] = React.useReducer(x => x + 1, 0);
   React.useEffect(() => {
@@ -363,7 +508,6 @@ function useStore() {
   }, []);
   return state;
 }
-
 function initAuth() {
   console.log('[ZH] initAuth start');
 
@@ -377,9 +521,14 @@ function initAuth() {
     state.loading = false;
     resolvedOnce = true;
     if (session) {
-      try { await pullAll(); } catch (e) { console.error('[ZH] pull failed:', e); }
+      try {
+        await pullAll();
+      } catch (e) {
+        console.error('[ZH] pull failed:', e);
+      }
     } else {
-      state.wellness = []; state.activities = [];
+      state.wellness = [];
+      state.activities = [];
     }
     emit();
   });
@@ -394,42 +543,73 @@ function initAuth() {
     }
   }, 10000);
 }
-
 async function signIn(email) {
   const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+  const {
+    error
+  } = await sb.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: redirectTo
+    }
+  });
   if (error) throw error;
 }
 async function signInWithPassword(email, password) {
-  console.log('[ZH] signInWithPassword start');
-  const result = await Promise.race([
-    sb.auth.signInWithPassword({ email, password }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('signIn timed out after 10s')), 10000))
-  ]);
-  console.log('[ZH] signInWithPassword result:', result);
-  if (result.error) throw result.error;
+  console.log('[ZH] signInWithPassword start (direct REST)');
+  // Bypass SDK — direct REST call to Supabase auth.
+  const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      email,
+      password
+    })
+  });
+  const json = await res.json();
+  if (!res.ok || json.error || !json.access_token) {
+    throw new Error(json.error_description || json.error || json.msg || 'Sign in failed (' + res.status + ')');
+  }
+  console.log('[ZH] got tokens, hydrating SDK session');
+  // Feed the tokens into the SDK so it manages refresh + storage.
+  const {
+    error
+  } = await sb.auth.setSession({
+    access_token: json.access_token,
+    refresh_token: json.refresh_token
+  });
+  if (error) throw error;
 }
-async function signOut() { await sb.auth.signOut(); }
-
+async function signOut() {
+  await sb.auth.signOut();
+}
 async function pullAll() {
   console.log('[ZH] pullAll start');
   const timer = setTimeout(() => console.warn('[ZH] pullAll: still waiting after 8s'), 8000);
   try {
-    const oldest = new Date(); oldest.setDate(oldest.getDate() - 365);
+    const oldest = new Date();
+    oldest.setDate(oldest.getDate() - 365);
     const oldestISO = oldest.toISOString().slice(0, 10);
-
-    const [w, a, log] = await Promise.all([
-      sb.from('zepp_wellness').select('*').gte('day', oldestISO).order('day', { ascending: true }),
-      sb.from('zepp_activities').select('*').gte('start_date', oldest.toISOString()).order('start_date', { ascending: false }),
-      sb.from('zepp_sync_log').select('*').order('ran_at', { ascending: false }).limit(1)
-    ]);
+    const [w, a, log] = await Promise.all([sb.from('zepp_wellness').select('*').gte('day', oldestISO).order('day', {
+      ascending: true
+    }), sb.from('zepp_activities').select('*').gte('start_date', oldest.toISOString()).order('start_date', {
+      ascending: false
+    }), sb.from('zepp_sync_log').select('*').order('ran_at', {
+      ascending: false
+    }).limit(1)]);
     if (w.error) console.error('[ZH] wellness error:', w.error);
     if (a.error) console.error('[ZH] activities error:', a.error);
     if (log.error) console.error('[ZH] log error:', log.error);
-    console.log('[ZH] pulled', { wellness: (w.data||[]).length, activities: (a.data||[]).length });
+    console.log('[ZH] pulled', {
+      wellness: (w.data || []).length,
+      activities: (a.data || []).length
+    });
     state.wellness = w.data || [];
     state.activities = a.data || [];
-    state.lastSync = (log.data && log.data[0]) || null;
+    state.lastSync = log.data && log.data[0] || null;
     emit();
   } catch (e) {
     console.error('Pull failed:', e);
@@ -437,28 +617,44 @@ async function pullAll() {
     clearTimeout(timer);
   }
 }
-
 window.ZH = window.ZH || {};
-window.ZH.db = { useStore, initAuth, signIn, signInWithPassword, signOut, pullAll, getSession: () => state.session };
-
+window.ZH.db = {
+  useStore,
+  initAuth,
+  signIn,
+  signInWithPassword,
+  signOut,
+  pullAll,
+  getSession: () => state.session
+};
 
 // ===== src/app.jsx =====
 // Charts and COLORS are exposed on window.ZH.charts (declared in charts.jsx above).
 const COLORS_REF = () => window.ZH.charts.COLORS;
 const Charts = {
-  Bar: (p) => window.ZH.charts.BarChart(p),
-  Line: (p) => window.ZH.charts.LineChart(p),
-  Load: (p) => window.ZH.charts.TrainingLoadChart(p),
+  Bar: p => window.ZH.charts.BarChart(p),
+  Line: p => window.ZH.charts.LineChart(p),
+  Load: p => window.ZH.charts.TrainingLoadChart(p)
 };
 
 // Range options
-const RANGES = [
-  { key: '7', label: '7d', days: 7 },
-  { key: '30', label: '30d', days: 30 },
-  { key: '90', label: '90d', days: 90 },
-  { key: '365', label: '1y', days: 365 },
-];
-
+const RANGES = [{
+  key: '7',
+  label: '7d',
+  days: 7
+}, {
+  key: '30',
+  label: '30d',
+  days: 30
+}, {
+  key: '90',
+  label: '90d',
+  days: 90
+}, {
+  key: '365',
+  label: '1y',
+  days: 365
+}];
 function activityIcon(type) {
   const t = (type || '').toLowerCase();
   if (t.includes('run')) return '🏃';
@@ -469,15 +665,18 @@ function activityIcon(type) {
   if (t.includes('yoga') || t.includes('stretch')) return '🧘';
   return '💪';
 }
-
 function fmtDuration(secs) {
   if (!secs) return '—';
   const h = Math.floor(secs / 3600);
-  const m = Math.floor((secs % 3600) / 60);
+  const m = Math.floor(secs % 3600 / 60);
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 function fmtDate(iso) {
-  return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', weekday: 'short' });
+  return new Date(iso).toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    weekday: 'short'
+  });
 }
 function fmtKm(meters) {
   if (!meters) return null;
@@ -488,33 +687,76 @@ function fmtKm(meters) {
 function fillRange(rows, days, fields) {
   const byDay = new Map(rows.map(r => [r.day, r]));
   const out = [];
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today); d.setDate(d.getDate() - i);
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
     const day = d.toISOString().slice(0, 10);
     const r = byDay.get(day);
-    const item = { day };
+    const item = {
+      day
+    };
     fields.forEach(f => item[f] = r ? r[f] : null);
     out.push(item);
   }
   return out;
 }
-
 function App() {
   const s = window.ZH.db.useStore();
   const [rangeKey, setRangeKey] = React.useState('30');
   const range = RANGES.find(r => r.key === rangeKey) || RANGES[1];
-
-  if (s.loading) return <div className="signin-wrap"><div className="text-muted">Loading… {s.error && <div style={{color: 'var(--accent)', marginTop: 12, fontSize: 12, fontFamily: 'monospace', maxWidth: 600}}>{s.error}</div>}</div></div>;
-  if (s.error) return <div className="signin-wrap"><div className="card" style={{maxWidth: 500}}><h3 style={{margin: 0}}>Error</h3><pre style={{fontSize: 12, whiteSpace: 'pre-wrap', color: 'var(--accent)'}}>{s.error}</pre></div></div>;
-  if (!s.session) return <SignIn />;
+  if (s.loading) return /*#__PURE__*/React.createElement("div", {
+    className: "signin-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-muted"
+  }, "Loading\u2026 ", s.error && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: 'var(--accent)',
+      marginTop: 12,
+      fontSize: 12,
+      fontFamily: 'monospace',
+      maxWidth: 600
+    }
+  }, s.error)));
+  if (s.error) return /*#__PURE__*/React.createElement("div", {
+    className: "signin-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      maxWidth: 500
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: 0
+    }
+  }, "Error"), /*#__PURE__*/React.createElement("pre", {
+    style: {
+      fontSize: 12,
+      whiteSpace: 'pre-wrap',
+      color: 'var(--accent)'
+    }
+  }, s.error)));
+  if (!s.session) return /*#__PURE__*/React.createElement(SignIn, null);
 
   // Slice data to the selected range
   const days = range.days;
-  const stepsData = fillRange(s.wellness, days, ['steps']).map(r => ({ day: r.day, value: r.steps }));
-  const sleepData = fillRange(s.wellness, days, ['sleep_secs']).map(r => ({ day: r.day, value: r.sleep_secs ? r.sleep_secs / 3600 : null }));
-  const rhrData = fillRange(s.wellness, days, ['resting_hr']).map(r => ({ day: r.day, value: r.resting_hr }));
-  const weightData = fillRange(s.wellness, days, ['weight']).map(r => ({ day: r.day, value: r.weight }));
+  const stepsData = fillRange(s.wellness, days, ['steps']).map(r => ({
+    day: r.day,
+    value: r.steps
+  }));
+  const sleepData = fillRange(s.wellness, days, ['sleep_secs']).map(r => ({
+    day: r.day,
+    value: r.sleep_secs ? r.sleep_secs / 3600 : null
+  }));
+  const rhrData = fillRange(s.wellness, days, ['resting_hr']).map(r => ({
+    day: r.day,
+    value: r.resting_hr
+  }));
+  const weightData = fillRange(s.wellness, days, ['weight']).map(r => ({
+    day: r.day,
+    value: r.weight
+  }));
   const loadData = fillRange(s.wellness, days, ['ctl', 'atl']);
 
   // Stats: latest values + 7-day comparison
@@ -524,157 +766,216 @@ function App() {
     const vals = rows.map(r => r[field]).filter(v => v != null);
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
   }
-  const avgSteps = avg(recent, 'steps'), prevSteps = avg(prev, 'steps');
-  const avgSleep = avg(recent, 'sleep_secs'), prevSleep = avg(prev, 'sleep_secs');
-  const avgRhr = avg(recent, 'resting_hr'), prevRhr = avg(prev, 'resting_hr');
+  const avgSteps = avg(recent, 'steps'),
+    prevSteps = avg(prev, 'steps');
+  const avgSleep = avg(recent, 'sleep_secs'),
+    prevSleep = avg(prev, 'sleep_secs');
+  const avgRhr = avg(recent, 'resting_hr'),
+    prevRhr = avg(prev, 'resting_hr');
   const latestWeight = s.wellness.map(r => r.weight).filter(v => v != null).slice(-1)[0];
   const latestCtl = s.wellness.map(r => r.ctl).filter(v => v != null).slice(-1)[0];
   const latestAtl = s.wellness.map(r => r.atl).filter(v => v != null).slice(-1)[0];
 
   // Workouts in range
-  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
   const workouts = s.activities.filter(a => new Date(a.start_date) >= cutoff);
-
-  return (
-    <div className="wrap">
-      <header>
-        <div className="brand">
-          <div className="brand-mark">♥</div>
-          <div>
-            <h1>Zepp Health</h1>
-            <div className="sub">Your watch data, your dashboard.</div>
-          </div>
-        </div>
-        <div className="row-h gap-12">
-          <div className="range-tabs">
-            {RANGES.map(r => (
-              <button key={r.key} className={rangeKey === r.key ? 'active' : ''} onClick={() => setRangeKey(r.key)}>{r.label}</button>
-            ))}
-          </div>
-          <button className="btn btn-sm btn-ghost" onClick={() => window.ZH.db.pullAll()}>↻</button>
-          <button className="btn btn-sm btn-ghost" title="Sign out" onClick={async () => { if (confirm('Sign out?')) await window.ZH.db.signOut(); }}>👤</button>
-        </div>
-      </header>
-
-      {s.wellness.length === 0 && s.activities.length === 0 ? (
-        <div className="card empty">
-          <p>No data yet.</p>
-          <p className="text-sm">Trigger the sync workflow on GitHub Actions, or wait for the next scheduled run.</p>
-        </div>
-      ) : (
-        <>
-          <div className="stats">
-            <Stat label="Steps (7d avg)" value={avgSteps ? Math.round(avgSteps).toLocaleString() : '—'} prev={prevSteps} cur={avgSteps} better="up" />
-            <Stat label="Sleep (7d avg)" value={avgSleep ? (avgSleep / 3600).toFixed(1) : '—'} unit="h" prev={prevSleep} cur={avgSleep} better="up" />
-            <Stat label="Resting HR (7d)" value={avgRhr ? Math.round(avgRhr) : '—'} unit="bpm" prev={prevRhr} cur={avgRhr} better="down" />
-            <Stat label="Weight" value={latestWeight ? latestWeight.toFixed(1) : '—'} unit="kg" />
-            <Stat label="Fitness (CTL)" value={latestCtl ? latestCtl.toFixed(1) : '—'} />
-            <Stat label="Fatigue (ATL)" value={latestAtl ? latestAtl.toFixed(1) : '—'} />
-          </div>
-
-          <div className="grid-2">
-            <div className="card">
-              <div className="card-head">
-                <h2 className="card-title">Daily steps</h2>
-                <span className="card-sub">{range.label}</span>
-              </div>
-              <Charts.Bar data={stepsData} color={window.ZH.charts.COLORS.green} formatValue={v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v.toFixed(0)} />
-            </div>
-
-            <div className="card">
-              <div className="card-head">
-                <h2 className="card-title">Sleep duration</h2>
-                <span className="card-sub">hours</span>
-              </div>
-              <Charts.Bar data={sleepData} color={window.ZH.charts.COLORS.purple} formatValue={v => v.toFixed(1)} />
-            </div>
-
-            <div className="card">
-              <div className="card-head">
-                <h2 className="card-title">Resting heart rate</h2>
-                <span className="card-sub">bpm · 7d rolling avg</span>
-              </div>
-              <Charts.Line data={rhrData} color={window.ZH.charts.COLORS.accent} formatValue={v => Math.round(v)} />
-            </div>
-
-            <div className="card">
-              <div className="card-head">
-                <h2 className="card-title">Weight</h2>
-                <span className="card-sub">kg</span>
-              </div>
-              <Charts.Line data={weightData} color={window.ZH.charts.COLORS.yellow} formatValue={v => v.toFixed(1)} />
-            </div>
-          </div>
-
-          <div className="card" style={{marginTop: 14}}>
-            <div className="card-head">
-              <h2 className="card-title">Training load</h2>
-              <div className="row-h text-sm">
-                <span style={{color: window.ZH.charts.COLORS.blue}}>● CTL (fitness)</span>
-                <span style={{color: window.ZH.charts.COLORS.accent}}>● ATL (fatigue)</span>
-              </div>
-            </div>
-            <Charts.Load data={loadData} />
-          </div>
-
-          <div className="card" style={{marginTop: 14}}>
-            <div className="card-head">
-              <h2 className="card-title">Workouts</h2>
-              <span className="card-sub">{workouts.length} in {range.label}</span>
-            </div>
-            {workouts.length === 0 ? (
-              <div className="empty text-sm">No workouts in this range.</div>
-            ) : workouts.map(w => (
-              <div className="workout" key={w.id}>
-                <div className="workout-icon">{activityIcon(w.type)}</div>
-                <div className="workout-body">
-                  <div className="workout-title">{w.name || w.type || 'Workout'}</div>
-                  <div className="workout-meta">
-                    <span>{fmtDate(w.start_date_local || w.start_date)}</span>
-                    <span>{fmtDuration(w.moving_time || w.elapsed_time)}</span>
-                    {fmtKm(w.distance) && <span>{fmtKm(w.distance)}</span>}
-                    {w.average_heartrate && <span>{Math.round(w.average_heartrate)} bpm avg</span>}
-                    {w.max_heartrate && <span>{w.max_heartrate} max</span>}
-                  </div>
-                </div>
-                <div className="workout-right">
-                  {w.calories ? <div>{Math.round(w.calories)} kcal</div> : null}
-                  {w.icu_training_load ? <div>load {Math.round(w.icu_training_load)}</div> : null}
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      <div style={{marginTop: 32, textAlign: 'center', color: 'var(--muted-2)', fontSize: 11, fontFamily: 'JetBrains Mono'}}>
-        {s.lastSync ? (
-          <>last sync: {new Date(s.lastSync.ran_at).toLocaleString('en-GB')} {s.lastSync.ok ? '✓' : '⚠ failed'}</>
-        ) : 'never synced'}
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "wrap"
+  }, /*#__PURE__*/React.createElement("header", null, /*#__PURE__*/React.createElement("div", {
+    className: "brand"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "brand-mark"
+  }, "\u2665"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", null, "Zepp Health"), /*#__PURE__*/React.createElement("div", {
+    className: "sub"
+  }, "Your watch data, your dashboard."))), /*#__PURE__*/React.createElement("div", {
+    className: "row-h gap-12"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "range-tabs"
+  }, RANGES.map(r => /*#__PURE__*/React.createElement("button", {
+    key: r.key,
+    className: rangeKey === r.key ? 'active' : '',
+    onClick: () => setRangeKey(r.key)
+  }, r.label))), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-sm btn-ghost",
+    onClick: () => window.ZH.db.pullAll()
+  }, "\u21BB"), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-sm btn-ghost",
+    title: "Sign out",
+    onClick: async () => {
+      if (confirm('Sign out?')) await window.ZH.db.signOut();
+    }
+  }, "\uD83D\uDC64"))), s.wellness.length === 0 && s.activities.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "card empty"
+  }, /*#__PURE__*/React.createElement("p", null, "No data yet."), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm"
+  }, "Trigger the sync workflow on GitHub Actions, or wait for the next scheduled run.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    className: "stats"
+  }, /*#__PURE__*/React.createElement(Stat, {
+    label: "Steps (7d avg)",
+    value: avgSteps ? Math.round(avgSteps).toLocaleString() : '—',
+    prev: prevSteps,
+    cur: avgSteps,
+    better: "up"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Sleep (7d avg)",
+    value: avgSleep ? (avgSleep / 3600).toFixed(1) : '—',
+    unit: "h",
+    prev: prevSleep,
+    cur: avgSleep,
+    better: "up"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Resting HR (7d)",
+    value: avgRhr ? Math.round(avgRhr) : '—',
+    unit: "bpm",
+    prev: prevRhr,
+    cur: avgRhr,
+    better: "down"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Weight",
+    value: latestWeight ? latestWeight.toFixed(1) : '—',
+    unit: "kg"
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Fitness (CTL)",
+    value: latestCtl ? latestCtl.toFixed(1) : '—'
+  }), /*#__PURE__*/React.createElement(Stat, {
+    label: "Fatigue (ATL)",
+    value: latestAtl ? latestAtl.toFixed(1) : '—'
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "grid-2"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-head"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "card-title"
+  }, "Daily steps"), /*#__PURE__*/React.createElement("span", {
+    className: "card-sub"
+  }, range.label)), /*#__PURE__*/React.createElement(Charts.Bar, {
+    data: stepsData,
+    color: window.ZH.charts.COLORS.green,
+    formatValue: v => v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v.toFixed(0)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-head"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "card-title"
+  }, "Sleep duration"), /*#__PURE__*/React.createElement("span", {
+    className: "card-sub"
+  }, "hours")), /*#__PURE__*/React.createElement(Charts.Bar, {
+    data: sleepData,
+    color: window.ZH.charts.COLORS.purple,
+    formatValue: v => v.toFixed(1)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-head"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "card-title"
+  }, "Resting heart rate"), /*#__PURE__*/React.createElement("span", {
+    className: "card-sub"
+  }, "bpm \xB7 7d rolling avg")), /*#__PURE__*/React.createElement(Charts.Line, {
+    data: rhrData,
+    color: window.ZH.charts.COLORS.accent,
+    formatValue: v => Math.round(v)
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-head"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "card-title"
+  }, "Weight"), /*#__PURE__*/React.createElement("span", {
+    className: "card-sub"
+  }, "kg")), /*#__PURE__*/React.createElement(Charts.Line, {
+    data: weightData,
+    color: window.ZH.charts.COLORS.yellow,
+    formatValue: v => v.toFixed(1)
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-head"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "card-title"
+  }, "Training load"), /*#__PURE__*/React.createElement("div", {
+    className: "row-h text-sm"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: window.ZH.charts.COLORS.blue
+    }
+  }, "\u25CF CTL (fitness)"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: window.ZH.charts.COLORS.accent
+    }
+  }, "\u25CF ATL (fatigue)"))), /*#__PURE__*/React.createElement(Charts.Load, {
+    data: loadData
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginTop: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card-head"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "card-title"
+  }, "Workouts"), /*#__PURE__*/React.createElement("span", {
+    className: "card-sub"
+  }, workouts.length, " in ", range.label)), workouts.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "empty text-sm"
+  }, "No workouts in this range.") : workouts.map(w => /*#__PURE__*/React.createElement("div", {
+    className: "workout",
+    key: w.id
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "workout-icon"
+  }, activityIcon(w.type)), /*#__PURE__*/React.createElement("div", {
+    className: "workout-body"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "workout-title"
+  }, w.name || w.type || 'Workout'), /*#__PURE__*/React.createElement("div", {
+    className: "workout-meta"
+  }, /*#__PURE__*/React.createElement("span", null, fmtDate(w.start_date_local || w.start_date)), /*#__PURE__*/React.createElement("span", null, fmtDuration(w.moving_time || w.elapsed_time)), fmtKm(w.distance) && /*#__PURE__*/React.createElement("span", null, fmtKm(w.distance)), w.average_heartrate && /*#__PURE__*/React.createElement("span", null, Math.round(w.average_heartrate), " bpm avg"), w.max_heartrate && /*#__PURE__*/React.createElement("span", null, w.max_heartrate, " max"))), /*#__PURE__*/React.createElement("div", {
+    className: "workout-right"
+  }, w.calories ? /*#__PURE__*/React.createElement("div", null, Math.round(w.calories), " kcal") : null, w.icu_training_load ? /*#__PURE__*/React.createElement("div", null, "load ", Math.round(w.icu_training_load)) : null))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 32,
+      textAlign: 'center',
+      color: 'var(--muted-2)',
+      fontSize: 11,
+      fontFamily: 'JetBrains Mono'
+    }
+  }, s.lastSync ? /*#__PURE__*/React.createElement(React.Fragment, null, "last sync: ", new Date(s.lastSync.ran_at).toLocaleString('en-GB'), " ", s.lastSync.ok ? '✓' : '⚠ failed') : 'never synced'));
 }
-
-function Stat({ label, value, unit, prev, cur, better }) {
+function Stat({
+  label,
+  value,
+  unit,
+  prev,
+  cur,
+  better
+}) {
   let deltaClass = '';
   let deltaText = '';
   if (cur != null && prev != null && prev > 0) {
-    const pct = ((cur - prev) / prev) * 100;
+    const pct = (cur - prev) / prev * 100;
     const sign = pct >= 0 ? '+' : '';
     deltaText = `${sign}${pct.toFixed(0)}% vs prev 7d`;
-    if (better === 'up') deltaClass = pct >= 0 ? 'up' : 'down';
-    else if (better === 'down') deltaClass = pct <= 0 ? 'up' : 'down';
+    if (better === 'up') deltaClass = pct >= 0 ? 'up' : 'down';else if (better === 'down') deltaClass = pct <= 0 ? 'up' : 'down';
   }
-  return (
-    <div className="stat">
-      <div className="label">{label}</div>
-      <div className="value">{value}{unit && <span className="unit">{unit}</span>}</div>
-      {deltaText && <div className={'delta ' + deltaClass}>{deltaText}</div>}
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "stat"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "label"
+  }, label), /*#__PURE__*/React.createElement("div", {
+    className: "value"
+  }, value, unit && /*#__PURE__*/React.createElement("span", {
+    className: "unit"
+  }, unit)), deltaText && /*#__PURE__*/React.createElement("div", {
+    className: 'delta ' + deltaClass
+  }, deltaText));
 }
-
 function SignIn() {
   const [mode, setMode] = React.useState('password'); // 'password' | 'magic'
   const [email, setEmail] = React.useState('mihael.florian@gmail.com');
@@ -682,10 +983,10 @@ function SignIn() {
   const [sent, setSent] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
-
   async function submit(e) {
     e.preventDefault();
-    setError(null); setBusy(true);
+    setError(null);
+    setBusy(true);
     try {
       if (mode === 'password') {
         await window.ZH.db.signInWithPassword(email.trim(), password);
@@ -693,62 +994,98 @@ function SignIn() {
         await window.ZH.db.signIn(email.trim());
         setSent(true);
       }
-    } catch (e) { setError(e.message || 'Sign in failed'); }
-    finally { setBusy(false); }
+    } catch (e) {
+      setError(e.message || 'Sign in failed');
+    } finally {
+      setBusy(false);
+    }
   }
-
-  return (
-    <div className="signin-wrap">
-      <div className="card signin-card">
-        <div className="row-h" style={{marginBottom: 20}}>
-          <div className="brand-mark">♥</div>
-          <div style={{fontWeight: 700}}>Zepp Health</div>
-        </div>
-        {sent ? (
-          <>
-            <h3 style={{margin: '0 0 8px'}}>Check your email</h3>
-            <p className="text-muted text-sm">Magic link sent to <b>{email}</b>.</p>
-          </>
-        ) : (
-          <form onSubmit={submit}>
-            <h3 style={{margin: '0 0 16px'}}>Sign in</h3>
-            <div className="field">
-              <label>Email</label>
-              <input className="input" type="email" required value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            {mode === 'password' && (
-              <div className="field">
-                <label>Password</label>
-                <input className="input" type="password" required value={password} onChange={e => setPassword(e.target.value)} autoFocus />
-              </div>
-            )}
-            {error && <div className="text-sm" style={{color: 'var(--accent)', marginBottom: 12}}>{error}</div>}
-            <button className="btn btn-primary btn-block" type="submit" disabled={busy}>
-              {busy ? '…' : (mode === 'password' ? 'Sign in' : 'Send magic link')}
-            </button>
-            <div style={{textAlign: 'center', marginTop: 12}}>
-              <button type="button" className="btn-ghost btn btn-sm" onClick={() => { setMode(mode === 'password' ? 'magic' : 'password'); setError(null); }}>
-                {mode === 'password' ? 'Use magic link instead' : 'Use password instead'}
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
-  );
+  return /*#__PURE__*/React.createElement("div", {
+    className: "signin-wrap"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card signin-card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "row-h",
+    style: {
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "brand-mark"
+  }, "\u2665"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700
+    }
+  }, "Zepp Health")), sent ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 8px'
+    }
+  }, "Check your email"), /*#__PURE__*/React.createElement("p", {
+    className: "text-muted text-sm"
+  }, "Magic link sent to ", /*#__PURE__*/React.createElement("b", null, email), ".")) : /*#__PURE__*/React.createElement("form", {
+    onSubmit: submit
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 16px'
+    }
+  }, "Sign in"), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Email"), /*#__PURE__*/React.createElement("input", {
+    className: "input",
+    type: "email",
+    required: true,
+    value: email,
+    onChange: e => setEmail(e.target.value)
+  })), mode === 'password' && /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Password"), /*#__PURE__*/React.createElement("input", {
+    className: "input",
+    type: "password",
+    required: true,
+    value: password,
+    onChange: e => setPassword(e.target.value),
+    autoFocus: true
+  })), error && /*#__PURE__*/React.createElement("div", {
+    className: "text-sm",
+    style: {
+      color: 'var(--accent)',
+      marginBottom: 12
+    }
+  }, error), /*#__PURE__*/React.createElement("button", {
+    className: "btn btn-primary btn-block",
+    type: "submit",
+    disabled: busy
+  }, busy ? '…' : mode === 'password' ? 'Sign in' : 'Send magic link'), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: 'center',
+      marginTop: 12
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "btn-ghost btn btn-sm",
+    onClick: () => {
+      setMode(mode === 'password' ? 'magic' : 'password');
+      setError(null);
+    }
+  }, mode === 'password' ? 'Use magic link instead' : 'Use password instead')))));
 }
-
 if (typeof setBoot === 'function') setBoot('inline script running');
-if (!window.supabase) { showFatal && showFatal('Supabase CDN failed to load (window.supabase is undefined)'); throw new Error('Supabase CDN failed to load'); }
-if (!window.React) { showFatal && showFatal('React CDN failed to load'); throw new Error('React CDN failed to load'); }
-if (!window.ReactDOM) { showFatal && showFatal('ReactDOM CDN failed to load'); throw new Error('ReactDOM CDN failed to load'); }
+if (!window.supabase) {
+  showFatal && showFatal('Supabase CDN failed to load (window.supabase is undefined)');
+  throw new Error('Supabase CDN failed to load');
+}
+if (!window.React) {
+  showFatal && showFatal('React CDN failed to load');
+  throw new Error('React CDN failed to load');
+}
+if (!window.ReactDOM) {
+  showFatal && showFatal('ReactDOM CDN failed to load');
+  throw new Error('ReactDOM CDN failed to load');
+}
 if (typeof setBoot === 'function') setBoot('mounting React');
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+root.render(/*#__PURE__*/React.createElement(App, null));
 if (typeof setBoot === 'function') setBoot('React mounted, calling initAuth');
 window.ZH.db.initAuth();
-
-
 </script>
 </body>
 </html>

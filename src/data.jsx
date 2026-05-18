@@ -58,13 +58,21 @@ async function signIn(email) {
   if (error) throw error;
 }
 async function signInWithPassword(email, password) {
-  console.log('[ZH] signInWithPassword start');
-  const result = await Promise.race([
-    sb.auth.signInWithPassword({ email, password }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('signIn timed out after 10s')), 10000))
-  ]);
-  console.log('[ZH] signInWithPassword result:', result);
-  if (result.error) throw result.error;
+  console.log('[ZH] signInWithPassword start (direct REST)');
+  // Bypass SDK — direct REST call to Supabase auth.
+  const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  const json = await res.json();
+  if (!res.ok || json.error || !json.access_token) {
+    throw new Error(json.error_description || json.error || json.msg || ('Sign in failed (' + res.status + ')'));
+  }
+  console.log('[ZH] got tokens, hydrating SDK session');
+  // Feed the tokens into the SDK so it manages refresh + storage.
+  const { error } = await sb.auth.setSession({ access_token: json.access_token, refresh_token: json.refresh_token });
+  if (error) throw error;
 }
 async function signOut() { await sb.auth.signOut(); }
 
