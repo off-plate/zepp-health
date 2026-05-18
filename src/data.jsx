@@ -24,26 +24,19 @@ function useStore() {
 async function initAuth() {
   try {
     console.log('[ZH] initAuth start');
-    // Race getSession against a 4s timeout. Supabase JS sometimes hangs forever
-    // on corrupted/stale storage. If it times out, clear storage and try once more.
+    // Race getSession against a generous timeout so we don't hang forever on rare
+    // edge cases, but don't destroy stored sessions — if it times out, just fall
+    // through to no-session state (user can sign in again).
     let session = null;
     try {
       const result = await Promise.race([
         sb.auth.getSession(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('getSession timeout')), 4000))
+        new Promise((_, rej) => setTimeout(() => rej(new Error('getSession timeout')), 15000))
       ]);
       session = result.data && result.data.session;
       if (result.error) console.error('[ZH] getSession error:', result.error);
     } catch (e) {
-      console.warn('[ZH] getSession timed out — clearing storage');
-      try {
-        Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k));
-      } catch (_) {}
-      const retry = await Promise.race([
-        sb.auth.getSession(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('retry timeout')), 4000))
-      ]).catch(() => ({ data: { session: null } }));
-      session = retry.data && retry.data.session;
+      console.warn('[ZH] getSession timed out, proceeding without session');
     }
     console.log('[ZH] session:', session ? session.user.email : 'none');
     state.session = session;
