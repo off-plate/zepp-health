@@ -58,13 +58,19 @@ async function signIn(email) {
   if (error) throw error;
 }
 async function signInWithPassword(email, password) {
-  const { error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) throw error;
+  console.log('[ZH] signInWithPassword start');
+  const result = await Promise.race([
+    sb.auth.signInWithPassword({ email, password }),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('signIn timed out after 10s')), 10000))
+  ]);
+  console.log('[ZH] signInWithPassword result:', result);
+  if (result.error) throw result.error;
 }
 async function signOut() { await sb.auth.signOut(); }
 
 async function pullAll() {
   console.log('[ZH] pullAll start');
+  const timer = setTimeout(() => console.warn('[ZH] pullAll: still waiting after 8s'), 8000);
   try {
     const oldest = new Date(); oldest.setDate(oldest.getDate() - 365);
     const oldestISO = oldest.toISOString().slice(0, 10);
@@ -84,6 +90,8 @@ async function pullAll() {
     emit();
   } catch (e) {
     console.error('Pull failed:', e);
+  } finally {
+    clearTimeout(timer);
   }
 }
 
