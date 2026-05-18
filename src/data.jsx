@@ -21,44 +21,35 @@ function useStore() {
   return state;
 }
 
-async function initAuth() {
-  try {
-    console.log('[ZH] initAuth start');
-    // Race getSession against a generous timeout so we don't hang forever on rare
-    // edge cases, but don't destroy stored sessions — if it times out, just fall
-    // through to no-session state (user can sign in again).
-    let session = null;
-    try {
-      const result = await Promise.race([
-        sb.auth.getSession(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('getSession timeout')), 15000))
-      ]);
-      session = result.data && result.data.session;
-      if (result.error) console.error('[ZH] getSession error:', result.error);
-    } catch (e) {
-      console.warn('[ZH] getSession timed out, proceeding without session');
-    }
-    console.log('[ZH] session:', session ? session.user.email : 'none');
-    state.session = session;
-    if (session) {
-      console.log('[ZH] pulling data…');
-      await pullAll();
-    }
-  } catch (err) {
-    console.error('[ZH] initAuth fatal:', err);
-    state.error = err.message || String(err);
-  } finally {
-    state.loading = false;
-    emit();
-  }
+function initAuth() {
+  console.log('[ZH] initAuth start');
 
-  sb.auth.onAuthStateChange(async (_event, session) => {
-    console.log('[ZH] auth state change:', _event, session ? session.user.email : 'none');
+  // Don't block on getSession (it hangs intermittently in Supabase JS).
+  // Just register the listener — it fires INITIAL_SESSION once the lib initializes,
+  // and again on any subsequent sign-in / sign-out.
+  let resolvedOnce = false;
+  sb.auth.onAuthStateChange(async (event, session) => {
+    console.log('[ZH] auth event:', event, session ? session.user.email : 'none');
     state.session = session;
-    if (session) await pullAll();
-    else { state.wellness = []; state.activities = []; }
+    state.loading = false;
+    resolvedOnce = true;
+    if (session) {
+      try { await pullAll(); } catch (e) { console.error('[ZH] pull failed:', e); }
+    } else {
+      state.wellness = []; state.activities = [];
+    }
     emit();
   });
+
+  // Fallback: if for some reason the listener never fires, stop loading after 10s
+  // so the sign-in screen appears instead of hanging forever.
+  setTimeout(() => {
+    if (!resolvedOnce && state.loading) {
+      console.warn('[ZH] auth listener never fired, falling through to sign-in');
+      state.loading = false;
+      emit();
+    }
+  }, 10000);
 }
 
 async function signIn(email) {
